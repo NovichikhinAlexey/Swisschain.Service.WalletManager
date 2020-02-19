@@ -19,7 +19,7 @@ namespace Service.WalletManager.Test.Repositories
 {
     public class EnrolledBalanceRepositoryTest
     {
-        private readonly string? _connectionString;
+        private readonly string _connectionString;
 
         public EnrolledBalanceRepositoryTest()
         {

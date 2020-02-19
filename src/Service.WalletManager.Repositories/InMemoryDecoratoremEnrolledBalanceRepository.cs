@@ -103,8 +103,10 @@ namespace Service.WalletManager.Repositories
             if(!_memCache.TryGetValue(key, out EnrolledBalance value))
             {
                 value =await _enrolledBalanceRepository.TryGetAsync(key);
-                var entry = _memCache.CreateEntry(key);
-                entry.Value = EnrolledBalance.Create(key, value.Balance, value.Block);
+                using (var entry = _memCache.CreateEntry(key))
+                {
+                    entry.Value = EnrolledBalance.Create(key, value?.Balance ?? 0, value?.Block ?? 0);
+                }
             }
 
             return value;

@@ -1,54 +1,91 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+using Autofac;
 using Microsoft.Extensions.Logging;
+using Service.WalletManager.Domain.Services;
 
 namespace Service.WalletManager.HostedServices
 {
-    public class BalanceReadingHostedService : IHostedService, IDisposable
+    public class BalanceReadingHostedService : IStartable, IDisposable
     {
-        private int executionCount = 0;
         private readonly ILogger<BalanceReadingHostedService> _logger;
-        private Timer _timer;
+        private readonly IBalanceProcessorService _balanceProcessorService;
+        private Task _backgroundWorker;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
-        public BalanceReadingHostedService(ILogger<BalanceReadingHostedService> logger)
+        public BalanceReadingHostedService(
+            ILogger<BalanceReadingHostedService> logger,
+            IBalanceProcessorService balanceProcessorService)
         {
             _logger = logger;
+            _balanceProcessorService = balanceProcessorService;
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("BalanceReadingHostedService running.");
 
-            _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(5));
+            _backgroundWorker = Task.Run(async () =>
+            {
+                do
+                {
+                    await DoWorkAsync();
+
+                    await Task.Delay(30_000);
+                } while (!stoppingToken.IsCancellationRequested);
+            }, stoppingToken);
 
             return Task.CompletedTask;
         }
 
-        private void DoWork(object state)
+        private async Task DoWorkAsync()
         {
-            var count = Interlocked.Increment(ref executionCount);
+            _logger.LogInformation(
+                "BalanceReadingHostedService is working.");
+
+            try
+            {
+                await _balanceProcessorService.ProcessAsync(100);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(
+                    "BalanceReadingHostedService encountered an unexpected error while reading balances.");
+            }
 
             _logger.LogInformation(
-                "BalanceReadingHostedService is working. Count: {Count}", count);
+                "BalanceReadingHostedService finished reading balances.");
         }
 
-        public Task StopAsync(CancellationToken stoppingToken)
+        public async Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("BalanceReadingHostedService is stopping.");
 
-            _timer?.Change(Timeout.Infinite, 0);
-
-            return Task.CompletedTask;
+            try
+            {
+                await _backgroundWorker;
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         public void Dispose()
         {
-            _timer?.Dispose();
+            try
+            {
+                _cancellationTokenSource.Cancel();
+            }
+            catch (Exception e)
+            {
+            }
+        }
+
+        public void Start()
+        {
+            StartAsync(_cancellationTokenSource.Token).Wait();
         }
     }
 }

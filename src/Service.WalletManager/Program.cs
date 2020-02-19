@@ -1,24 +1,64 @@
-using Microsoft.Extensions.Configuration;
+using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Service.WalletManager.Repositories.DbContexts;
 using Swisschain.Sdk.Server.Common;
+using Swisschain.Sdk.Server.Loggin;
 
 namespace Service.WalletManager
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            using (var loggerFactory = LogConfigurator.Configure("Service.WalletManager",
+                ApplicationEnvironment.Config["SeqUrl"]))
+            {
+                var logger = loggerFactory.CreateLogger<Program>();
+
+                try
+                {
+                    logger.LogInformation("Application is being started");
+
+                    var host = CreateHostBuilder(loggerFactory).Build();
+                    var options = host.Services.GetService<DbContextOptions<WalletManagerContext>>();
+
+                    using (var context = new WalletManagerContext(options))
+                    {
+                        await context.Database.MigrateAsync();
+                    }
+
+                    host.Run();
+
+                    logger.LogInformation("Application has been stopped");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogCritical(ex, "Application has been terminated unexpectedly");
+                }
+            }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .SwisschainService<Startup>()
-                .ConfigureAppConfiguration(builder =>
+        private static IHostBuilder CreateHostBuilder(ILoggerFactory loggerFactory) =>
+            new HostBuilder()
+                .SwisschainService<Startup>(options =>
                 {
-                    builder
-                        .AddJsonFile("appsettings.json")
-                        .AddEnvironmentVariables();
+                    options.UseLoggerFactory(loggerFactory);
+
+                    var remoteSettingsUrl = ApplicationEnvironment.Config["RemoteSettingsUrl"];
+
+                    if (remoteSettingsUrl != default)
+                    {
+                        options.WithWebJsonConfigurationSource(webJsonOptions =>
+                        {
+                            webJsonOptions.Url = remoteSettingsUrl;
+                            webJsonOptions.IsOptional = ApplicationEnvironment.IsDevelopment;
+                            webJsonOptions.Version = ApplicationInformation.AppVersion;
+                        });
+                    }
                 });
     }
 }

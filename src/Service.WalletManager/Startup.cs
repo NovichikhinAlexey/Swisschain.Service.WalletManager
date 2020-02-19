@@ -1,18 +1,26 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Autofac;
+using Lykke.Service.BlockchainApi.Client;
+using Lykke.Service.BlockchainApi.Client.Models;
+using Lykke.Service.BlockchainApi.Contract.Assets;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Service.WalletManager.Config;
 using Service.WalletManager.Domain.Repositories;
+using Service.WalletManager.DomainServices;
 using Service.WalletManager.HostedServices;
 using Service.WalletManager.Repositories;
 using Service.WalletManager.Repositories.DbContexts;
-using Service.WalletManager.Settings;
+using Service.WalletManager.Services;
 using Swisschain.Sdk.Server.Common;
 
 namespace Service.WalletManager
 {
-    public class Startup : SwisschainStartup
+    public class Startup : SwisschainStartup<WalletManagerConfig>
     {
         public Startup(IConfiguration configuration) : base(configuration)
         {
@@ -27,7 +35,7 @@ namespace Service.WalletManager
 
         protected override void ConfigureContainerExt(ContainerBuilder builder)
         {
-            var walletManagerConfig = this.Configuration.Get<WalletManagerConfig>();
+            var walletManagerConfig = this.Config;
 
             builder
                 .Register(x =>
@@ -44,6 +52,10 @@ namespace Service.WalletManager
                 .As<IEnrolledBalanceRepository>()
                 .SingleInstance();
 
+            builder.RegisterType<OperationRepository>()
+                .As<IOperationRepository>()
+                .SingleInstance();
+
             builder.RegisterDecorator<EnrolledBalanceRepository, IEnrolledBalanceRepository>();
             builder.RegisterDecorator<InMemoryDecoratorEnrolledBalanceRepository, IEnrolledBalanceRepository>();
 
@@ -51,11 +63,56 @@ namespace Service.WalletManager
                 .Register(x => walletManagerConfig)
                 .As<WalletManagerConfig>()
                 .SingleInstance();
+
+            builder.RegisterType<BlockchainApiClientProvider>()
+                .As<IBlockchainApiClientProvider>();
+
+            var blockchainAssetsDict = new ReadOnlyDictionary<string, BlockchainAsset>(
+                new Dictionary<string, BlockchainAsset>()
+                {
+                    {
+                        "Bitcoin", new BlockchainAsset(new AssetContract()
+                        {
+                            Accuracy = 8,
+                            AssetId = "BTC",
+                            Address = null,
+                            Name = "BTC"
+                        })
+                    }
+                });
+
+            foreach (var blockchain in walletManagerConfig.BlockchainSettings.Blockchains)
+            {
+                builder.RegisterType<BlockchainApiClient>()
+                    .Named<IBlockchainApiClient>(blockchain.BlockchainId)
+                    .WithParameter(TypedParameter.From(blockchain.BlockchainApi))
+                    .SingleInstance()
+                    .AutoActivate();
+
+                builder.Register(factory =>
+                    {
+                        var logger = factory.Resolve<ILogger<BalanceReadingHostedService>>();
+                        var logger2 = factory.Resolve<ILogger<BalanceProcessorService>>();
+                        var blockchainApiProvider = factory.Resolve<IBlockchainApiClientProvider>();
+                        var balanceRepository = factory.Resolve<IEnrolledBalanceRepository>();
+                        var operationRepository = factory.Resolve<IOperationRepository>();
+                        var balanceProcessorService = new BalanceProcessorService(
+                            blockchain.BlockchainId,
+                            logger2,
+                            blockchainApiProvider.Get(blockchain.BlockchainId),
+                            balanceRepository,
+                            operationRepository,
+                            blockchainAssetsDict);
+
+                        return new BalanceReadingHostedService(logger, balanceProcessorService);
+                    }).As<IStartable>()
+                    .AutoActivate();
+            }
         }
 
         protected override void ConfigureServicesExt(IServiceCollection services)
         {
-            var walletManagerConfig = this.Configuration.Get<WalletManagerConfig>();
+            var walletManagerConfig = this.Config;
 
             services.AddDbContext<WalletManagerContext>(
                 options =>
@@ -64,7 +121,6 @@ namespace Service.WalletManager
                 });
 
             services.AddMemoryCache();
-            services.AddHostedService<BalanceReadingHostedService>();
         }
     }
 }

@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.24.0" />
-    <PackageReference Include="Swisschain.Sdk.Server" Version="1.0.0" />
+    <PackageReference Include="Swisschain.Sdk.Server" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

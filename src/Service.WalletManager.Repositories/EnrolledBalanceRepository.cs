@@ -30,7 +30,10 @@ namespace Service.WalletManager.Repositories
                     var result = await context
                         .EnrolledBalances
                         .FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                            key.DepositWalletAddress);
+                            key.WalletAddress);
+
+                    if (result == null)
+                        continue;
 
                     list.Add(MapFromEntity(result));
                 }
@@ -44,7 +47,7 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var existing = await context.EnrolledBalances.FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                    key.DepositWalletAddress);
+                    key.WalletAddress);
 
                 if (existing != null)
                     return;
@@ -53,7 +56,7 @@ namespace Service.WalletManager.Repositories
                 {
                     BlockchianId = key.BlockchainId,
                     BlockchainAssetId = key.BlockchainAssetId,
-                    WalletAddress = key.DepositWalletAddress,
+                    WalletAddress = key.WalletAddress,
                     Balance = balance.ToString(),
                     BlockNumber = balanceBlock
                 };
@@ -69,7 +72,7 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var existing = await context.EnrolledBalances.FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                    key.DepositWalletAddress);
+                    key.WalletAddress);
 
                 if (existing != null)
                 {
@@ -81,7 +84,7 @@ namespace Service.WalletManager.Repositories
                     {
                         BlockchianId = key.BlockchainId,
                         BlockchainAssetId = key.BlockchainAssetId,
-                        WalletAddress = key.DepositWalletAddress,
+                        WalletAddress = key.WalletAddress,
                         Balance = "0",
                         BlockNumber = transactionBlock
                     };
@@ -98,7 +101,7 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var result = await context.EnrolledBalances.FindAsync(
-                    key.BlockchainId, key.BlockchainAssetId, key.DepositWalletAddress);
+                    key.BlockchainId, key.BlockchainAssetId, key.WalletAddress);
                 var mapped = MapFromEntity(result);
 
                 return mapped;
@@ -112,15 +115,19 @@ namespace Service.WalletManager.Repositories
                 var result = context
                     .EnrolledBalances
                     .Skip(skip)
-                    .Take(count)
-                    .Select(MapFromEntity);
+                    .Take(count);
 
-                return result;
+                await result.LoadAsync();
+
+                return result.Select(MapFromEntity);
             }
         }
 
         private static EnrolledBalance MapFromEntity(EnrolledBalanceEntity entity)
         {
+            if (entity == null)
+                return null;
+
             BigInteger.TryParse(entity.Balance, out var balance);
             return EnrolledBalance.Create(
                 new DepositWalletKey(entity.BlockchainAssetId, entity.BlockchianId, entity.WalletAddress),

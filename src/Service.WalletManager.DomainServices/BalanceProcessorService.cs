@@ -1,54 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Common;
-using Common.Log;
-using Lykke.Common.Log;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainApi.Client.Models;
+using Microsoft.Extensions.Logging;
 using Service.WalletManager.Domain.Models;
 using Service.WalletManager.Domain.Repositories;
+using Service.WalletManager.Domain.Services;
 
 namespace Service.WalletManager.DomainServices
 {
-    public class Asset
+    public class BalanceProcessorService : IBalanceProcessorService
     {
-        public string BlockchainId { get; set; }
-
-        public string BlockchainAssetId { get; set; }
-    }
-
-    public class BalanceProcessorService
-    {
-        private readonly string _blockchainType;
-        private readonly ILog _log;
+        private readonly string _blockchainId;
+        private readonly ILogger<BalanceProcessorService> _log;
         private readonly IBlockchainApiClient _blockchainApiClient;
         private readonly IEnrolledBalanceRepository _enrolledBalanceRepository;
         private readonly HashSet<string> _warningAssets;
         private readonly IReadOnlyDictionary<string, Asset> _assets = new ReadOnlyDictionary<string, Asset>(
             new Dictionary<string, Asset>()
             {
-                {"Bitcoin", new Asset() { BlockchainAssetId = "Bitcoin", BlockchainId = "Bitcoin"}},
-                {"Ethereum", new Asset() { BlockchainAssetId = "Ethereum", BlockchainId = "Ethereum"}}
+                {"BTC", new Asset() { BlockchainAssetId = "BTC", BlockchainId = "Bitcoin"}},
+                {"ETH", new Asset() { BlockchainAssetId = "ETH", BlockchainId = "Ethereum"}}
             });
 
         private IReadOnlyDictionary<string, BlockchainAsset> _blockchainAssets;
+        private readonly IOperationRepository _operationRepository;
 
         public BalanceProcessorService(
-            string blockchainType,
-            ILogFactory logFactory,
+            string blockchainId,
+            ILogger<BalanceProcessorService> log,
             IBlockchainApiClient blockchainApiClient,
             IEnrolledBalanceRepository enrolledBalanceRepository,
+            IOperationRepository operationRepository,
             IReadOnlyDictionary<string, BlockchainAsset> blockchainAssets)
         {
-            _blockchainType = blockchainType;
-            _log = logFactory.CreateLog(this);
+            _blockchainId = blockchainId;
+            _log = log;
             _blockchainApiClient = blockchainApiClient;
             _enrolledBalanceRepository = enrolledBalanceRepository;
             _blockchainAssets = blockchainAssets;
+            _operationRepository = operationRepository;
 
             _warningAssets = new HashSet<string>();
         }
@@ -84,7 +81,7 @@ namespace Service.WalletManager.DomainServices
             {
                 if (!_warningAssets.Contains(depositWallet.AssetId))
                 {
-                    _log.Warning(nameof(ProcessBalance), "Asset is not found", context: depositWallet);
+                    _log.LogWarning("Asset is not found {depositWallet}", depositWallet);
 
                     _warningAssets.Add(depositWallet.AssetId);
                 }
@@ -96,7 +93,7 @@ namespace Service.WalletManager.DomainServices
             {
                 if (!_warningAssets.Contains(depositWallet.AssetId))
                 {
-                    _log.Warning(nameof(ProcessBalance), "Blockchain asset is not found", context: depositWallet);
+                    _log.LogWarning("Blockchain asset is not found {depositWallet}}", depositWallet);
 
                     _warningAssets.Add(depositWallet.AssetId);
                 }
@@ -104,13 +101,15 @@ namespace Service.WalletManager.DomainServices
                 return;
             }
 
+            var key = new DepositWalletKey(blockchainAsset.AssetId,
+                asset.BlockchainId,
+                depositWallet.Address);
+
             if (!enrolledBalances.TryGetValue(
-                GetEnrolledBalancesDictionaryKey(depositWallet.Address, depositWallet.AssetId),
+                GetEnrolledBalancesDictionaryKey(depositWallet.Address.ToLower(CultureInfo.InvariantCulture), depositWallet.AssetId),
                 out var enrolledBalance))
             {
-                _log.Warning(nameof(ProcessBalance), "Can't get balances for address", context: depositWallet);
-
-                return;
+                enrolledBalance = EnrolledBalance.Create(key, 0, 0);
             }
 
             var balanceStr = ConverterExtensions.ConvertToString(depositWallet.Balance, blockchainAsset.Accuracy, blockchainAsset.Accuracy);
@@ -122,21 +121,18 @@ namespace Service.WalletManager.DomainServices
                 enrolledBalance?.Balance ?? 0,
                 enrolledBalance?.Block ?? 0,
                 blockchainAsset.Accuracy,
-                out var _, 
-                out var _);
+                out var operationAmount);
 
             if (!cashinCouldBeStarted)
             {
                 return;
             }
 
-            //Detect operation
             await _enrolledBalanceRepository.SetBalanceAsync(
-                new DepositWalletKey(blockchainAsset.AssetId,
-                    asset.BlockchainId, 
-                    depositWallet.Address), 
-                enrolledBalance.Balance,
-                enrolledBalance.Block);
+                key,
+                balance,
+                depositWallet.Block);
+            await _operationRepository.SetAsync(CreateOperation.Create(key, operationAmount, depositWallet.Block));
         }
 
         private static bool CouldBeStarted(
@@ -145,11 +141,9 @@ namespace Service.WalletManager.DomainServices
             BigInteger enrolledBalanceAmount,
             BigInteger enrolledBalanceBlock,
             int assetAccuracy,
-            out BigInteger operationAmount,
-            out double matchingEngineOperationAmount)
+            out BigInteger operationAmount)
         {
             operationAmount = 0;
-            matchingEngineOperationAmount = 0;
 
             if (balanceBlock < enrolledBalanceBlock)
             {
@@ -161,15 +155,7 @@ namespace Service.WalletManager.DomainServices
 
             if (operationAmount <= 0)
             {
-                // Nothing to transfer
-                return false;
-            }
-
-            matchingEngineOperationAmount = ((double)operationAmount).TruncateDecimalPlaces(assetAccuracy);
-
-            if (matchingEngineOperationAmount <= 0)
-            {
-                // Nothing to enroll to the ME
+                // No visbible changes have happened since the last check
                 return false;
             }
 
@@ -181,13 +167,13 @@ namespace Service.WalletManager.DomainServices
             var walletKeys = balances.Select(x => new DepositWalletKey
             (
                 blockchainAssetId: x.AssetId,
-                blockchainId: _blockchainType,
+                blockchainId: _blockchainId,
                 depositWalletAddress: x.Address
             ));
 
             return (await _enrolledBalanceRepository.GetAsync(walletKeys))
                 .ToDictionary(
-                    x => GetEnrolledBalancesDictionaryKey(x.Key.DepositWalletAddress, x.Key.BlockchainAssetId),
+                    x => GetEnrolledBalancesDictionaryKey(x.Key.WalletAddress, x.Key.BlockchainAssetId),
                     y => y);
         }
 

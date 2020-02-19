@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Globalization;
 
 namespace Service.WalletManager.Domain.Models
 {
@@ -8,13 +6,13 @@ namespace Service.WalletManager.Domain.Models
     {
         public string BlockchainAssetId { get; }
         public string BlockchainId { get; }
-        public string DepositWalletAddress { get; }
+        public string WalletAddress { get; }
 
         public DepositWalletKey(string blockchainAssetId, string blockchainId, string depositWalletAddress)
         {
             BlockchainAssetId = blockchainAssetId;
             BlockchainId = blockchainId;
-            DepositWalletAddress = depositWalletAddress;
+            WalletAddress = depositWalletAddress?.ToLower(CultureInfo.InvariantCulture);
         }
 
         public override bool Equals(object obj)
@@ -28,14 +26,14 @@ namespace Service.WalletManager.Domain.Models
 
             return this.BlockchainAssetId == depositWalletKey.BlockchainAssetId &&
                    this.BlockchainId == depositWalletKey.BlockchainId &&
-                   this.DepositWalletAddress == depositWalletKey.DepositWalletAddress;
+                   this.WalletAddress == depositWalletKey.WalletAddress;
         }
 
         public override int GetHashCode()
         {
             return this.BlockchainAssetId.GetHashCode() + 
                    this.BlockchainId.GetHashCode() +
-                   this.DepositWalletAddress.GetHashCode();
+                   this.WalletAddress.GetHashCode();
         }
     }
 }

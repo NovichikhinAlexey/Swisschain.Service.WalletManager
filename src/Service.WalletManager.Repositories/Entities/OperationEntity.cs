@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Service.WalletManager.Repositories.Entities
 {
-    [Table(name: "enrolled_balance")]
-    public class EnrolledBalanceEntity
+    [Table(name: "operations")]
+    public class OperationEntity
     {
         [Key, Column(Order = 0)]
         public string BlockchianId { get; set; }
@@ -15,9 +15,12 @@ namespace Service.WalletManager.Repositories.Entities
         [Key, Column(Order = 2)]
         public string WalletAddress { get; set; }
 
-        [Required]
+        [Key, Column(Order = 3)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long OperationId { get; set; }
+
         public long BlockNumber { get; set; }
 
-        public string Balance { get; set; }
+        public string BalanceChange { get; set; }
     }
 }

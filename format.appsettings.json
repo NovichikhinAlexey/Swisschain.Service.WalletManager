@@ -1,4 +1,21 @@
 {
+  "Db": {
+    "ConnectionString": "${PostgreWalletManagerConnString}"
+  },
+  "SeqUrl": "{$SeqUrl}",
+  "BlockchainSettings": {
+    "BlockchainSignFacadeUrl": "${BlockchainSignFacade}",
+    "Blockchains": [
+      {
+        "BlockchainId": "Ethereum",
+        "BlockchainApi": "{$EthereumBlockchainApi}"
+      },
+      {
+        "BlockchainId": "Bitcoin",
+        "BlockchainApi": "{$BitcoinBlockchainApi}"
+      }
+    ]
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Trace"
