@@ -47,6 +47,7 @@ namespace Service.WalletManager.HostedServices
 
             try
             {
+                
                 await _balanceProcessorService.ProcessAsync(100);
             }
             catch (Exception e)

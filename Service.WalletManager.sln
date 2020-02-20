@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "09. client", "09. client", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{85EB7950-61F2-4B83-9F3E-F74ECCE0D3C8}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.github\workflows\CreateServiceDocker.yml = .github\workflows\CreateServiceDocker.yml
 		DeployNugetClient.yml = DeployNugetClient.yml
 		format.appsettings.json = format.appsettings.json

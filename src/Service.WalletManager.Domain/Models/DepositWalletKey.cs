@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using JetBrains.Annotations;
 
 namespace Service.WalletManager.Domain.Models
 {
@@ -12,28 +14,26 @@ namespace Service.WalletManager.Domain.Models
         {
             BlockchainAssetId = blockchainAssetId;
             BlockchainId = blockchainId;
-            WalletAddress = depositWalletAddress?.ToLower(CultureInfo.InvariantCulture);
+            WalletAddress = depositWalletAddress;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals([CanBeNull] object obj)
         {
-            if (obj == null)
-                return false;
+            if (obj is DepositWalletKey depositWalletKey)
+            {
+                return this.BlockchainAssetId == depositWalletKey.BlockchainAssetId &&
+                       this.BlockchainId == depositWalletKey.BlockchainId &&
+                       this.WalletAddress.Equals(depositWalletKey.WalletAddress, StringComparison.InvariantCultureIgnoreCase);
+            }
 
-            if (!(obj is DepositWalletKey depositWalletKey))
-                return false;
-
-
-            return this.BlockchainAssetId == depositWalletKey.BlockchainAssetId &&
-                   this.BlockchainId == depositWalletKey.BlockchainId &&
-                   this.WalletAddress == depositWalletKey.WalletAddress;
+            return false;
         }
 
         public override int GetHashCode()
         {
             return this.BlockchainAssetId.GetHashCode() + 
                    this.BlockchainId.GetHashCode() +
-                   this.WalletAddress.GetHashCode();
+                   this.WalletAddress.ToLower(CultureInfo.InvariantCulture).GetHashCode();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Lykke.Service.BlockchainApi.Client;
 
-namespace Service.WalletManager.Services
+namespace Service.WalletManager.Domain.Services
 {
     public interface IBlockchainApiClientProvider
     {

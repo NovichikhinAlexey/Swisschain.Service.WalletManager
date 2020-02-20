@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Swisschain.BlockchainApi.Client" Version="18.0.1" />
+  </ItemGroup>
+
 </Project>

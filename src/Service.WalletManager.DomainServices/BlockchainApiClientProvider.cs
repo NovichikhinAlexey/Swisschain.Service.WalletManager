@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Lykke.Service.BlockchainApi.Client;
+using Service.WalletManager.Domain.Services;
 
-namespace Service.WalletManager.Services
+namespace Service.WalletManager.DomainServices
 {
     public class BlockchainApiClientProvider : IBlockchainApiClientProvider
     {

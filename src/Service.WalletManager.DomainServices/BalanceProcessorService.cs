@@ -199,7 +199,7 @@ namespace Service.WalletManager.DomainServices
 
         private string GetEnrolledBalancesDictionaryKey(string address, string assetId)
         {
-            return $"{address}:{assetId}";
+            return $"{address.ToLower(CultureInfo.InvariantCulture)}:{assetId}";
         }
     }
 }

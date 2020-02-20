@@ -15,6 +15,8 @@ namespace Service.WalletManager.Repositories.Entities
         [Key, Column(Order = 2)]
         public string WalletAddress { get; set; }
 
+        public string OriginalWalletAddress { get; set; }
+
         [Key, Column(Order = 3)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long OperationId { get; set; }

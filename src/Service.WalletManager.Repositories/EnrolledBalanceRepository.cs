@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace Service.WalletManager.Repositories
                     var result = await context
                         .EnrolledBalances
                         .FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                            key.WalletAddress);
+                            key.WalletAddress.ToLower(CultureInfo.InvariantCulture));
 
                     if (result == null)
                         continue;
@@ -47,21 +48,29 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var existing = await context.EnrolledBalances.FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                    key.WalletAddress);
+                    key.WalletAddress.ToLower(CultureInfo.InvariantCulture));
 
                 if (existing != null)
-                    return;
-
-                var newEntity = new EnrolledBalanceEntity()
                 {
-                    BlockchianId = key.BlockchainId,
-                    BlockchainAssetId = key.BlockchainAssetId,
-                    WalletAddress = key.WalletAddress,
-                    Balance = balance.ToString(),
-                    BlockNumber = balanceBlock
-                };
+                    existing.Balance = balance.ToString();
+                    existing.BlockNumber = balanceBlock;
 
-                context.EnrolledBalances.Add(newEntity);
+                    context.Update(existing);
+                }
+                else
+                {
+                    var newEntity = new EnrolledBalanceEntity()
+                    {
+                        BlockchianId = key.BlockchainId,
+                        BlockchainAssetId = key.BlockchainAssetId,
+                        WalletAddress = key.WalletAddress.ToLower(CultureInfo.InvariantCulture),
+                        Balance = balance.ToString(),
+                        BlockNumber = balanceBlock,
+                        OriginalWalletAddress = key.WalletAddress
+                    };
+
+                    context.EnrolledBalances.Add(newEntity);
+                }
 
                 await context.SaveChangesAsync();
             }
@@ -72,7 +81,7 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var existing = await context.EnrolledBalances.FindAsync(key.BlockchainId, key.BlockchainAssetId,
-                    key.WalletAddress);
+                    key.WalletAddress.ToLower(CultureInfo.InvariantCulture));
 
                 if (existing != null)
                 {
@@ -84,13 +93,28 @@ namespace Service.WalletManager.Repositories
                     {
                         BlockchianId = key.BlockchainId,
                         BlockchainAssetId = key.BlockchainAssetId,
-                        WalletAddress = key.WalletAddress,
+                        WalletAddress = key.WalletAddress.ToLower(CultureInfo.InvariantCulture),
                         Balance = "0",
-                        BlockNumber = transactionBlock
+                        BlockNumber = transactionBlock,
+                        OriginalWalletAddress = key.WalletAddress
                     };
 
                     context.EnrolledBalances.Add(newEntity);
                 }
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteBalanceAsync(DepositWalletKey key)
+        {
+            using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
+            {
+                var result = await context.EnrolledBalances.FindAsync(
+                    key.BlockchainId, key.BlockchainAssetId, key.WalletAddress.ToLower(CultureInfo.InvariantCulture));
+
+                if (result != null)
+                    context.EnrolledBalances.Remove(result);
 
                 await context.SaveChangesAsync();
             }
@@ -101,7 +125,7 @@ namespace Service.WalletManager.Repositories
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
             {
                 var result = await context.EnrolledBalances.FindAsync(
-                    key.BlockchainId, key.BlockchainAssetId, key.WalletAddress);
+                    key.BlockchainId, key.BlockchainAssetId, key.WalletAddress.ToLower(CultureInfo.InvariantCulture));
                 var mapped = MapFromEntity(result);
 
                 return mapped;
@@ -119,7 +143,7 @@ namespace Service.WalletManager.Repositories
 
                 await result.LoadAsync();
 
-                return result.Select(MapFromEntity);
+                return result.Select(MapFromEntity).ToList();
             }
         }
 
@@ -130,7 +154,7 @@ namespace Service.WalletManager.Repositories
 
             BigInteger.TryParse(entity.Balance, out var balance);
             return EnrolledBalance.Create(
-                new DepositWalletKey(entity.BlockchainAssetId, entity.BlockchianId, entity.WalletAddress),
+                new DepositWalletKey(entity.BlockchainAssetId, entity.BlockchianId, entity.OriginalWalletAddress),
                 balance,
                 entity.BlockNumber);
         }

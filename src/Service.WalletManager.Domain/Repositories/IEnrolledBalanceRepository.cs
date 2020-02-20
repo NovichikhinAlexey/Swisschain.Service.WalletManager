@@ -13,6 +13,8 @@ namespace Service.WalletManager.Domain.Repositories
 
         Task ResetBalanceAsync(DepositWalletKey key, long transactionBlock);
 
+        Task DeleteBalanceAsync(DepositWalletKey key);
+
         Task<EnrolledBalance> TryGetAsync(DepositWalletKey key);
 
         Task<IEnumerable<EnrolledBalance>> GetAllAsync(int skip, int count);

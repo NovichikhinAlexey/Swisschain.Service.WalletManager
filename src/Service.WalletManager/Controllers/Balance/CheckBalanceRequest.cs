@@ -17,8 +17,22 @@ namespace Service.WalletManager.Controllers.Balance
         public string WalletAddress { get; set; }
     }
 
+    public class BalanceResponses
+    {
+        [JsonPropertyName("balances")]
+        public CheckBalanceResponse[] Balances { get; set; }
+    }
     public class CheckBalanceResponse
     {
+        [JsonPropertyName("blockchainId")]
+        public string BlockchainId { get; set; }
+
+        [JsonPropertyName("blockchainAssetId")]
+        public string BlockchainAssetId { get; set; }
+
+        [JsonPropertyName("walletAddress")]
+        public string WalletAddress { get; set; }
+
         [JsonPropertyName("balance")]
         public string Balance { get; set; }
 

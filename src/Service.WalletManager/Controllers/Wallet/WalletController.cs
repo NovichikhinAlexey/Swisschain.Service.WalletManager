@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Service.WalletManager.Domain.Models;
+using Service.WalletManager.Domain.Services;
 using Service.WalletManager.Services;
 
 namespace Service.WalletManager.Controllers.Wallet
@@ -8,18 +10,21 @@ namespace Service.WalletManager.Controllers.Wallet
     [Route("api/[controller]")]
     public class WalletController : ControllerBase
     {
-        private readonly IBlockchainApiClientProvider _blockchainApiClientProvider;
+        private readonly IWalletService _walletService;
 
-        public WalletController(IBlockchainApiClientProvider blockchainApiClientProvider)
+        public WalletController(IWalletService walletService)
         {
-            _blockchainApiClientProvider = blockchainApiClientProvider;
+            _walletService = walletService;
         }
 
         [HttpPost]
         public async Task<IActionResult> RegisterWalletAsync(RegisterWalletRequest request)
         {
-            var client = _blockchainApiClientProvider.Get(request.BlockchainId);
-            await client.StartBalanceObservationAsync(request.WalletAddress);
+            var key = new DepositWalletKey(
+                request.BlockchainId, 
+                request.BlockchainAssetId, 
+                request.WalletAddress);
+            await _walletService.RegisterWalletAsync(key);
 
             return Ok();
         }
@@ -27,8 +32,11 @@ namespace Service.WalletManager.Controllers.Wallet
         [HttpDelete]
         public async Task<IActionResult> DeleteWalletAsync(RegisterWalletRequest request)
         {
-            var client = _blockchainApiClientProvider.Get(request.BlockchainId);
-            await client.StopBalanceObservationAsync(request.WalletAddress);
+            var key = new DepositWalletKey(
+                request.BlockchainId,
+                request.BlockchainAssetId,
+                request.WalletAddress);
+            await _walletService.DeleteWalletAsync(key);
 
             return Ok();
         }

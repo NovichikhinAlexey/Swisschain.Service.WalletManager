@@ -22,6 +22,9 @@
     <Protobuf Include="..\Service.WalletManager\Protos\isalive.proto">
       <Link>Protos\isalive.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\Service.WalletManager\Protos\services.proto">
+      <Link>Protos\services.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

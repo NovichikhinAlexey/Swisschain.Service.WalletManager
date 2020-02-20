@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Numerics;
@@ -26,7 +26,7 @@ namespace Service.WalletManager.Test.Repositories
             this._connectionString = Environment.GetEnvironmentVariable("POSTGRE_SQL_CONNECTION_STRING");
         }
 
-        [Fact]
+        [Fact(Skip = "skip for now")]
         public async Task Test1()
         {
             var services = new ServiceCollection();

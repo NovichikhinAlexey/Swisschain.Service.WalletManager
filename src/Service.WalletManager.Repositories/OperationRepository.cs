@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -37,7 +38,8 @@ namespace Service.WalletManager.Repositories
                 var result = context.Operations.Where(x => 
                                                 x.BlockchainAssetId == key.BlockchainAssetId &&
                                                 x.BlockchianId == key.BlockchainId &&
-                                                x.WalletAddress == key.WalletAddress)
+                                                x.WalletAddress == key.WalletAddress.ToLower(CultureInfo.InvariantCulture))
+                    .OrderBy(x => x.OperationId)
                     .Skip(skip)
                     .Take(take);
 
@@ -55,7 +57,8 @@ namespace Service.WalletManager.Repositories
                 BlockchianId = operation.Key.BlockchainId,
                 BalanceChange = operation.BalanceChange.ToString(),
                 BlockNumber = operation.Block,
-                WalletAddress = operation.Key.WalletAddress,
+                WalletAddress = operation.Key.WalletAddress.ToLower(CultureInfo.InvariantCulture),
+                OriginalWalletAddress = operation.Key.WalletAddress
             };
         }
 
@@ -64,7 +67,8 @@ namespace Service.WalletManager.Repositories
             BigInteger.TryParse(operation.BalanceChange, out var balanceChange);
 
             return Operation.Create(
-                new DepositWalletKey(operation.BlockchainAssetId, operation.BlockchianId, operation.WalletAddress),
+                new DepositWalletKey(operation.BlockchainAssetId, operation.BlockchianId, 
+                operation.OriginalWalletAddress),
                 balanceChange,
                 operation.BlockNumber,
                 operation.OperationId);

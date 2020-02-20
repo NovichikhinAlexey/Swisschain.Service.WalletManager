@@ -7,6 +7,9 @@ namespace Service.WalletManager.Controllers.Wallet
         [JsonPropertyName("blockchainId")]
         public string BlockchainId { get; set; }
 
+        [JsonPropertyName("blockchainAssetId")]
+        public string BlockchainAssetId { get; set; }
+
         [JsonPropertyName("walletAddress")]
         public string WalletAddress { get; set; }
     }

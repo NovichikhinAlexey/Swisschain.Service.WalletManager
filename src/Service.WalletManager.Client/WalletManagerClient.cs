@@ -8,8 +8,17 @@ namespace Service.WalletManager.Client
         public WalletManagerClient(string serverGrpcUrl) : base(serverGrpcUrl)
         {
             Monitoring = new Monitoring.MonitoringClient(Channel);
+            Wallets= new Wallets.WalletsClient(Channel);
+            Balances = new Balances.BalancesClient(Channel);
+            Operations = new Operations.OperationsClient(Channel);
         }
 
         public Monitoring.MonitoringClient Monitoring { get; }
+
+        public Wallets.WalletsClient Wallets { get; }
+
+        public Operations.OperationsClient Operations { get; }
+
+        public Balances.BalancesClient Balances { get; }
     }
 }

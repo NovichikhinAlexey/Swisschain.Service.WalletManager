@@ -15,6 +15,8 @@ namespace Service.WalletManager.Repositories.Entities
         [Key, Column(Order = 2)]
         public string WalletAddress { get; set; }
 
+        public string OriginalWalletAddress { get; set; }
+
         [Required]
         public long BlockNumber { get; set; }
 

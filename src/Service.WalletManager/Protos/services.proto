@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+option csharp_namespace = "Service.WalletManager.Protos";
+
+package common;
+
+service Wallets {
+    rpc RegisterWallet (RegisterWalletRequest) returns(EmptyResponse);
+
+    rpc DeleteWallet (DeleteWalletRequest) returns(EmptyResponse);
+}
+
+service Balances {
+  rpc GetBalance (GetBalanceRequest) returns(BalanceResponse);
+
+  rpc GetAllBalances (GetAllBalanceRequest) returns(BalanceResponses);
+}
+
+service Operations {
+  rpc GetOperations (GetOperationRequest) returns(.common.GetOperationResponse);
+}
+
+message RegisterWalletRequest {
+    WalletKey walletKey = 1;
+}
+
+message DeleteWalletRequest {
+    WalletKey walletKey = 1;
+}
+
+message GetBalanceRequest{
+    WalletKey walletKey = 1;
+} 
+
+message GetAllBalanceRequest{
+  int32 skip = 1;
+  int32 take = 2;
+} 
+
+message BalanceResponse{
+    .common.WalletKey walletKey = 1;
+    string balance = 2;
+    int64 block =3;
+}
+
+message BalanceResponses{
+  repeated BalanceResponse balances = 1;
+}
+
+
+message GetOperationRequest {
+    .common.WalletKey walletKey = 1;
+    int32 skip = 2;
+    int32 take = 3;
+}
+
+message GetOperationResponse {
+  repeated .common.OperationResponse operations = 1;
+}
+
+message OperationResponse {
+    .common.WalletKey walletKey = 1;
+    int64 operationId = 2;
+    string balanceChange = 3;
+    int64 block = 4;
+}
+
+message WalletKey {
+  string blockchainId = 1;
+  string blockchainAssetId = 2;
+  string walletAddress = 3;
+}
+
+message EmptyResponse {
+
+}
+
+message ErrorResponse {
+  int32 errorCode = 1;
+  string errorMessage = 2;
+}

@@ -14,6 +14,33 @@ namespace Service.WalletManager.TestClient
             Console.WriteLine("Press enter to start");
             Console.ReadLine();
             var client = new WalletManagerClient("http://localhost:5001");
+            var walletKey = new WalletKey()
+            {
+                BlockchainAssetId = "BTC",
+                BlockchainId = "Bitcoin",
+                WalletAddress = "2NEZP81rD5VhqexqoWk1Hubh3QcHiNJCzCR"
+            };
+
+            var task = client.Wallets.RegisterWalletAsync(new RegisterWalletRequest()
+            {
+                WalletKey = walletKey
+            }).ResponseAsync.ContinueWith(async
+                (prev) =>
+            {
+                await prev;
+
+                var operations = await client.Operations.GetOperationsAsync(new GetOperationRequest()
+                {
+                    WalletKey = walletKey, 
+                    Skip = 0,
+                    Take = 100
+                });
+
+                var balance = await client.Balances.GetBalanceAsync(new GetBalanceRequest()
+                {
+                    WalletKey = walletKey,
+                });
+            });
 
             while (true)
             {
@@ -30,7 +57,7 @@ namespace Service.WalletManager.TestClient
                     Console.WriteLine(ex.Message);
                 }
 
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
         }
     }
