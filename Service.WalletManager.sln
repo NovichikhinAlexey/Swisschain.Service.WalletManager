@@ -9,8 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "09. client", "09. client", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{85EB7950-61F2-4B83-9F3E-F74ECCE0D3C8}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\dotnetcore.yml = .github\workflows\dotnetcore.yml
+		.github\workflows\CreateServiceDocker.yml = .github\workflows\CreateServiceDocker.yml
+		DeployNugetClient.yml = DeployNugetClient.yml
 		format.appsettings.json = format.appsettings.json
+		ValidateCommit.yml = ValidateCommit.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "08. Test", "08. Test", "{7F3DBAA2-139B-401D-A33F-1409A9BB4DE8}"
@@ -31,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.WalletManager.Domai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.WalletManager.Repositories", "src\Service.WalletManager.Repositories\Service.WalletManager.Repositories.csproj", "{FBF2B6A4-CB4C-42A9-9B72-577E51ECE66C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.WalletManager.Test", "test\Service.WalletManager.Test\Service.WalletManager.Test.csproj", "{A6505D9C-28A6-4885-9144-B40B0866C3AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.WalletManager.Test", "test\Service.WalletManager.Test\Service.WalletManager.Test.csproj", "{A6505D9C-28A6-4885-9144-B40B0866C3AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

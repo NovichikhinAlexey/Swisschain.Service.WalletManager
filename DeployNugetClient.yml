@@ -1,0 +1,23 @@
+name: Deploy client nuget
+
+on:
+  push:
+    tags: "client-*"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+    - name: Create the package
+      run: dotnet pack --configuration Release src/Service.WalletManager.Client /p:Version=${GITHUB_REF#refs/tags/client-}
+    - name: Publish the package to GPR
+      run: dotnet nuget push src/Service.WalletManager.Client/bin/Release/*.nupkg -s "https://api.nuget.org/v3/index.json" -k ${{ secrets.NUGET_TOCKEN }}

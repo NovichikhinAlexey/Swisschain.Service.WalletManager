@@ -1,6 +1,8 @@
-name: Continue integration for WalletManager
+name: Continuous integration for WalletManager
 
-on: [push]
+on:
+  push:
+    tags: "service-*"
 
 jobs:
   build:
@@ -18,7 +20,7 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release
     - name: Publish
-      run: dotnet publish ./src/Service.WalletManager/Service.WalletManager.csproj --output ./publish --configuration Release /p:AssemblyVersion=1.0.0
+      run: dotnet publish ./src/Service.WalletManager/Service.WalletManager.csproj --output ./publish --configuration Release /p:AssemblyVersion=${GITHUB_REF#refs/tags/service-}
     - name: Check dir
       run: ls ./publish
     - name: Publish to Registry
