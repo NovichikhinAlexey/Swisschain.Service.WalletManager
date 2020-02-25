@@ -11,6 +11,7 @@ namespace Service.WalletManager.Client
             Wallets= new Wallets.WalletsClient(Channel);
             Balances = new Balances.BalancesClient(Channel);
             Operations = new Operations.OperationsClient(Channel);
+            Transfers = new Transfers.TransfersClient(Channel);
         }
 
         public Monitoring.MonitoringClient Monitoring { get; }
@@ -20,5 +21,7 @@ namespace Service.WalletManager.Client
         public Operations.OperationsClient Operations { get; }
 
         public Balances.BalancesClient Balances { get; }
+
+        public Transfers.TransfersClient Transfers { get; }
     }
 }

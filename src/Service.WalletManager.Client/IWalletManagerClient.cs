@@ -11,5 +11,7 @@ namespace Service.WalletManager.Client
         Operations.OperationsClient Operations { get; }
 
         Balances.BalancesClient Balances { get; }
+
+        Transfers.TransfersClient Transfers { get; }
     }
 }

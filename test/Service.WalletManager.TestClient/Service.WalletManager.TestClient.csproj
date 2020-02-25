@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lykke.Service.BlockchainSignFacade.Client" Version="1.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Service.WalletManager.Client\Service.WalletManager.Client.csproj" />
   </ItemGroup>
 

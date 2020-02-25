@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
+using Common.Log;
+using Lykke.Service.BlockchainSignFacade.Client;
+using Lykke.Service.BlockchainSignFacade.Contract.Models;
 using Service.WalletManager.Client;
 using Service.WalletManager.Protos;
 
@@ -14,11 +16,16 @@ namespace Service.WalletManager.TestClient
             Console.WriteLine("Press enter to start");
             Console.ReadLine();
             var client = new WalletManagerClient("http://localhost:5001");
+            var signFacadeClient = new BlockchainSignFacadeClient("http://blockchain-sign-facade.services.svc.cluster.local/",
+                "350AFDCE-A027-4843-935F-EF5C377CE2EB", new EmptyLog());
+            var senderWallet = await signFacadeClient.CreateWalletAsync("Bitcoin");
+            var receiverWallet = await signFacadeClient.CreateWalletAsync("Bitcoin");
+
             var walletKey = new WalletKey()
             {
                 BlockchainAssetId = "BTC",
                 BlockchainId = "Bitcoin",
-                WalletAddress = "2NEZP81rD5VhqexqoWk1Hubh3QcHiNJCzCR"
+                WalletAddress = senderWallet.PublicAddress
             };
 
             var task = client.Wallets.RegisterWalletAsync(new RegisterWalletRequest()
@@ -29,9 +36,37 @@ namespace Service.WalletManager.TestClient
             {
                 await prev;
 
+                var operationId = Guid.NewGuid().ToString();
+                var builtTransaction = await client.Transfers.BuildTransactionAsync(new BuildTransactionRequest()
+                {
+                    OperationId = operationId,
+                    BlockchainAssetId = "BTC",
+                    BlockchainId = "Bitcoin",
+                    FromAddress = senderWallet.PublicAddress,
+                    FromAddressContext = senderWallet.AddressContext,
+                    Amount = "1000000",
+                    ToAddress = receiverWallet.PublicAddress,
+                    IncludeFee = true
+                });
+
+                var signedTransaction =
+                    await signFacadeClient.SignTransactionAsync("Bitcoin",
+                        new SignTransactionRequest()
+                        {
+                            PublicAddresses = new[] { senderWallet.PublicAddress },
+                            TransactionContext = builtTransaction.TransactionContext
+                        });
+
+                var sendTransactionResult = await client.Transfers.BroadcastTransactionAsync(new BroadcastTransactionRequest()
+                {
+                    BlockchainId = "Bitcoin",
+                    SignedTransaction = signedTransaction.SignedTransaction,
+                    OperationId = operationId
+                });
+
                 var operations = await client.Operations.GetOperationsAsync(new GetOperationRequest()
                 {
-                    WalletKey = walletKey, 
+                    WalletKey = walletKey,
                     Skip = 0,
                     Take = 100
                 });
@@ -52,7 +87,7 @@ namespace Service.WalletManager.TestClient
                     sw.Stop();
                     Console.WriteLine($"{result.Name}  {sw.ElapsedMilliseconds} ms");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }

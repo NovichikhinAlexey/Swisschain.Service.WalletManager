@@ -4,6 +4,6 @@ namespace Service.WalletManager.Domain.Services
 {
     public interface IBlockchainApiClientProvider
     {
-        IBlockchainApiClient Get(string blockchainType);
+        IBlockchainApiClient Get(string blockchainId);
     }
 }

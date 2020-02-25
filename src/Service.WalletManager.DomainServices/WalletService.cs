@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Lykke.Service.BlockchainApi.Client.Models;
 using Service.WalletManager.Domain.Models;
 using Service.WalletManager.Domain.Repositories;
 using Service.WalletManager.Domain.Services;
@@ -12,13 +10,16 @@ namespace Service.WalletManager.DomainServices
     {
         private readonly IBlockchainApiClientProvider _blockchainApiClientProvider;
         private readonly IEnrolledBalanceRepository _enrolledBalanceRepository;
+        private readonly AssetService _assetService;
 
         public WalletService(
             IBlockchainApiClientProvider blockchainApiClientProvider,
-            IEnrolledBalanceRepository enrolledBalanceRepository)
+            IEnrolledBalanceRepository enrolledBalanceRepository,
+            AssetService assetService)
         {
             _blockchainApiClientProvider = blockchainApiClientProvider;
             _enrolledBalanceRepository = enrolledBalanceRepository;
+            _assetService = assetService;
         }
 
         public async Task RegisterWalletAsync(DepositWalletKey key)

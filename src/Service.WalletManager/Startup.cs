@@ -39,6 +39,8 @@ namespace Service.WalletManager
             endpoints.MapGrpcService<BalanceGrpcService>();
 
             endpoints.MapGrpcService<OperationGrpcService>();
+
+            endpoints.MapGrpcService<TransferGrpcService>();
         }
 
         protected override void ConfigureContainerExt(ContainerBuilder builder)
@@ -78,6 +80,13 @@ namespace Service.WalletManager
 
             #region Services
 
+            builder.RegisterType<AssetService>()
+                .SingleInstance();
+
+            builder.RegisterType<TransferService>()
+                .As<ITransferService>()
+                .SingleInstance();
+
             builder.RegisterType<WalletService>()
                 .As<IWalletService>()
                 .SingleInstance();
@@ -94,20 +103,6 @@ namespace Service.WalletManager
                 .SingleInstance();
 
 
-            var blockchainAssetsDict = new ReadOnlyDictionary<string, BlockchainAsset>(
-                new Dictionary<string, BlockchainAsset>()
-                {
-                    {
-                        "Bitcoin", new BlockchainAsset(new AssetContract()
-                        {
-                            Accuracy = 8,
-                            AssetId = "BTC",
-                            Address = null,
-                            Name = "BTC"
-                        })
-                    }
-                });
-
             foreach (var blockchain in walletManagerConfig.BlockchainSettings.Blockchains)
             {
                 builder.RegisterType<BlockchainApiClient>()
@@ -123,16 +118,22 @@ namespace Service.WalletManager
                         var blockchainApiProvider = factory.Resolve<IBlockchainApiClientProvider>();
                         var balanceRepository = factory.Resolve<IEnrolledBalanceRepository>();
                         var operationRepository = factory.Resolve<IOperationRepository>();
+                        var client = blockchainApiProvider.Get(blockchain.BlockchainId);
+                        var blockchainAssetsDict = client
+                            .GetAllAssetsAsync(100)
+                            .GetAwaiter()
+                            .GetResult();
                         var balanceProcessorService = new BalanceProcessorService(
                             blockchain.BlockchainId,
                             logger2,
-                            blockchainApiProvider.Get(blockchain.BlockchainId),
+                            client,
                             balanceRepository,
                             operationRepository,
                             blockchainAssetsDict);
 
                         return new BalanceReadingHostedService(logger, balanceProcessorService);
                     })
+                    .SingleInstance()
                     .As<IStartable>()
                     .AutoActivate();
             }

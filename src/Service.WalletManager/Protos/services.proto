@@ -20,6 +20,45 @@ service Operations {
   rpc GetOperations (GetOperationRequest) returns(.common.GetOperationResponse);
 }
 
+service Transfers {
+  rpc BuildTransaction (BuildTransactionRequest) returns(BuiltTransactionResponse);
+
+  rpc BroadcastTransaction (BroadcastTransactionRequest) returns(BroadcastTransactionResponse);
+}
+
+message BuildTransactionRequest {
+  string operationId = 1;
+  string blockchainId = 2;
+  string blockchainAssetId = 3;
+  string fromAddress = 4;
+  string fromAddressContext = 5;
+  string toAddress = 6;
+  string amount = 7;
+  bool includeFee = 8;
+}
+
+message BuiltTransactionResponse {
+  string transactionContext = 1;
+}
+
+message BroadcastTransactionRequest{
+  string operationId = 1;
+  string blockchainId = 2;
+  string signedTransaction = 3;
+}
+
+message BroadcastTransactionResponse {
+  enum TransactionBroadcastResult {
+    SUCCESS = 0;
+    ALREADY_BROADCASTED = 1;
+    AMOUNT_IS_TOO_SMALL = 2;
+    NOT_ENOUGH_BALANCE = 3;
+    BUILDING_SHOULD_BE_REPEATED = 4;
+  }
+
+  TransactionBroadcastResult transactionBroadcastResult = 1;
+}
+
 message RegisterWalletRequest {
     WalletKey walletKey = 1;
 }
