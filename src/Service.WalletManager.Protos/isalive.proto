@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Service.WalletManager.Protos";
 
-package common;
+package services;
 
 service Monitoring {
 	rpc IsAlive (IsAliveRequest) returns (IsAliveResponse);

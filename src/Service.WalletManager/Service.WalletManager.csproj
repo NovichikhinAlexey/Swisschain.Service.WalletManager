@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Protos\isalive.proto" />
-    <None Remove="Protos\services.proto" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Grpc.Tools" Version="2.27.0">
       <PrivateAssets>all</PrivateAssets>
@@ -38,12 +33,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Service.WalletManager.DomainServices\Service.WalletManager.DomainServices.csproj" />
     <ProjectReference Include="..\Service.WalletManager.Domain\Service.WalletManager.Domain.csproj" />
+    <ProjectReference Include="..\Service.WalletManager.Protos\Service.WalletManager.Protos.csproj" />
     <ProjectReference Include="..\Service.WalletManager.Repositories\Service.WalletManager.Repositories.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Protos\services.proto" />
-    <Protobuf Include="Protos\isalive.proto" />
   </ItemGroup>
 
   <ItemGroup>

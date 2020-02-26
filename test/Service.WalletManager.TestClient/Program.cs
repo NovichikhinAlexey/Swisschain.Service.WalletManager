@@ -6,6 +6,7 @@ using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainSignFacade.Contract.Models;
 using Service.WalletManager.Client;
 using Service.WalletManager.Protos;
+using Service.WalletManager.Protos.Common;
 
 namespace Service.WalletManager.TestClient
 {

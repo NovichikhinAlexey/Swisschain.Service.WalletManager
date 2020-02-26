@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Swisschain.Sdk.Server.Common;
 using Service.WalletManager.Protos;
+using Swisschain.Sdk.Server.Common;
 
 namespace Service.WalletManager.Services
 {

@@ -7,6 +7,7 @@ using Service.WalletManager.Domain.Repositories;
 using Service.WalletManager.Domain.Services;
 using Swisschain.Sdk.Server.Common;
 using Service.WalletManager.Protos;
+using Service.WalletManager.Protos.Common;
 using Operation = Service.WalletManager.Domain.Models.Operation;
 
 namespace Service.WalletManager.Services

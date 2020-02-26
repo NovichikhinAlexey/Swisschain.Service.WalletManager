@@ -2,12 +2,14 @@ syntax = "proto3";
 
 option csharp_namespace = "Service.WalletManager.Protos";
 
-package common;
+import "common.proto";
+
+package services;
 
 service Wallets {
-    rpc RegisterWallet (RegisterWalletRequest) returns(EmptyResponse);
+    rpc RegisterWallet (RegisterWalletRequest) returns(.common.EmptyResponse);
 
-    rpc DeleteWallet (DeleteWalletRequest) returns(EmptyResponse);
+    rpc DeleteWallet (DeleteWalletRequest) returns(.common.EmptyResponse);
 }
 
 service Balances {
@@ -17,9 +19,9 @@ service Balances {
 }
 
 service Operations {
-  rpc GetOperations (GetOperationRequest) returns(.common.GetOperationResponse);
+  rpc GetOperations (GetOperationRequest) returns(GetOperationResponse);
 
-  rpc GetOperationsForBlockchain (GetOperationsForBlockchainRequest) returns(.common.GetOperationResponse);
+  rpc GetOperationsForBlockchain (GetOperationsForBlockchainRequest) returns(GetOperationResponse);
 }
 
 service Transfers {
@@ -62,15 +64,15 @@ message BroadcastTransactionResponse {
 }
 
 message RegisterWalletRequest {
-    WalletKey walletKey = 1;
+    .common.WalletKey walletKey = 1;
 }
 
 message DeleteWalletRequest {
-    WalletKey walletKey = 1;
+  .common.WalletKey walletKey = 1;
 }
 
 message GetBalanceRequest{
-    WalletKey walletKey = 1;
+  .common.WalletKey walletKey = 1;
 } 
 
 message GetAllBalanceRequest{
@@ -79,7 +81,7 @@ message GetAllBalanceRequest{
 } 
 
 message BalanceResponse{
-    .common.WalletKey walletKey = 1;
+  .common.WalletKey walletKey = 1;
     string balance = 2;
     int64 block =3;
 }
@@ -90,7 +92,7 @@ message BalanceResponses{
 
 
 message GetOperationRequest {
-    .common.WalletKey walletKey = 1;
+  .common.WalletKey walletKey = 1;
     int32 skip = 2;
     int32 take = 3;
 }
@@ -102,27 +104,12 @@ message GetOperationsForBlockchainRequest {
 }
 
 message GetOperationResponse {
-  repeated .common.OperationResponse operations = 1;
+  repeated OperationResponse operations = 1;
 }
 
 message OperationResponse {
-    .common.WalletKey walletKey = 1;
+  .common.WalletKey walletKey = 1;
     int64 operationId = 2;
     string balanceChange = 3;
     int64 block = 4;
-}
-
-message WalletKey {
-  string blockchainId = 1;
-  string blockchainAssetId = 2;
-  string walletAddress = 3;
-}
-
-message EmptyResponse {
-
-}
-
-message ErrorResponse {
-  int32 errorCode = 1;
-  string errorMessage = 2;
 }

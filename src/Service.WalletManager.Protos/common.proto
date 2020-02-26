@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "Service.WalletManager.Protos.Common";
+
+package common;
+
+message WalletKey {
+  string blockchainId = 1;
+  string blockchainAssetId = 2;
+  string walletAddress = 3;
+}
+
+message EmptyResponse {
+}
+
+message ErrorResponse {
+  int32 errorCode = 1;
+  string errorMessage = 2;
+}
