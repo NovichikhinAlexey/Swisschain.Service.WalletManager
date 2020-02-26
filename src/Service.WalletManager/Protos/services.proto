@@ -18,6 +18,8 @@ service Balances {
 
 service Operations {
   rpc GetOperations (GetOperationRequest) returns(.common.GetOperationResponse);
+
+  rpc GetOperationsForBlockchain (GetOperationsForBlockchainRequest) returns(.common.GetOperationResponse);
 }
 
 service Transfers {
@@ -91,6 +93,12 @@ message GetOperationRequest {
     .common.WalletKey walletKey = 1;
     int32 skip = 2;
     int32 take = 3;
+}
+
+message GetOperationsForBlockchainRequest {
+  string blockchainId = 1;
+  int32 skip = 2;
+  int32 take = 3;
 }
 
 message GetOperationResponse {

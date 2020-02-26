@@ -31,6 +31,22 @@ namespace Service.WalletManager.Repositories
             }
         }
 
+        public async Task<IEnumerable<Operation>> GetAllForBlockchainAsync(string blockchainId, int skip, int take)
+        {
+            using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
+            {
+                var result = context.Operations.Where(x =>
+                        x.BlockchianId == blockchainId )
+                    .OrderBy(x => x.OperationId)
+                    .Skip(skip)
+                    .Take(take);
+
+                await result.LoadAsync();
+
+                return result.Select(MapFromOperationEntity).ToList();
+            }
+        }
+
         public async Task<IEnumerable<Operation>> GetAsync(DepositWalletKey key, int skip, int take)
         {
             using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))

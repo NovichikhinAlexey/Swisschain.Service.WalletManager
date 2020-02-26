@@ -43,5 +43,34 @@ namespace Service.WalletManager.Services
 
             return response;
         }
+
+        public override async Task<GetOperationResponse> GetOperationsForBlockchain(GetOperationsForBlockchainRequest request, ServerCallContext context)
+        {
+            var operations = await _operationRepository.GetAllForBlockchainAsync(
+                request.BlockchainId, 
+                request.Skip,
+                request.Take);
+
+            var response = new GetOperationResponse();
+
+            if (operations != null && operations.Any())
+            {
+                response.Operations.AddRange(operations.Select(x =>
+                    new OperationResponse()
+                    {
+                        WalletKey = new WalletKey()
+                        {
+                            BlockchainAssetId = x.Key.BlockchainAssetId,
+                            BlockchainId = x.Key.BlockchainId,
+                            WalletAddress = x.Key.WalletAddress
+                        },
+                        BalanceChange = x.BalanceChange.ToString(),
+                        OperationId = x.OperationId,
+                        Block = x.Block
+                    }));
+            }
+
+            return response;
+        }
     }
 }

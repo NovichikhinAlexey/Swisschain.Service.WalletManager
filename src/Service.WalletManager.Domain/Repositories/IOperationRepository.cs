@@ -9,5 +9,7 @@ namespace Service.WalletManager.Domain.Repositories
         Task SetAsync(CreateOperation operation);
 
         Task<IEnumerable<Operation>> GetAsync(DepositWalletKey key, int skip, int take);
+
+        Task<IEnumerable<Operation>> GetAllForBlockchainAsync(string blockchainId, int skip, int take);
     }
 }
