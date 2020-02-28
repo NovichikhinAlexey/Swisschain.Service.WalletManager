@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Protos\**" />
-    <EmbeddedResource Remove="Protos\**" />
-    <None Remove="Protos\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.11.3" />
     <PackageReference Include="Grpc.Net.Client" Version="2.27.0" />
     <PackageReference Include="Grpc.Tools" Version="2.27.0">
@@ -21,7 +15,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Service.WalletManager.Protos\Service.WalletManager.Protos.csproj" />
+    <Folder Include="Protos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Service.WalletManager.Protos\common.proto">
+      <Link>Protos\common.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\Service.WalletManager.Protos\isalive.proto">
+      <Link>Protos\isalive.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\Service.WalletManager.Protos\services.proto">
+      <Link>Protos\services.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
 </Project>
