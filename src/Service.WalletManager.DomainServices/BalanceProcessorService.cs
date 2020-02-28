@@ -153,7 +153,7 @@ namespace Service.WalletManager.DomainServices
 
             operationAmount = balanceAmount - enrolledBalanceAmount;
 
-            if (operationAmount <= 0)
+            if (operationAmount == 0)
             {
                 // No visbible changes have happened since the last check
                 return false;
