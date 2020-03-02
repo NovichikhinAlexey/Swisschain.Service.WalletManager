@@ -15,7 +15,9 @@ service Wallets {
 service Balances {
   rpc GetBalance (GetBalanceRequest) returns(BalanceResponse);
 
-  rpc GetAllBalances (GetAllBalanceRequest) returns(BalanceResponses);
+  rpc GetAllBalancesForBlockchain (GetAllBalancesForBlockchainRequest) returns(BalanceResponses);
+
+  rpc GetAllBalances (GetAllBalancesRequest) returns(BalanceResponses);
 }
 
 service Operations {
@@ -77,9 +79,15 @@ message GetBalanceRequest{
   .common.WalletKey walletKey = 1;
 } 
 
-message GetAllBalanceRequest{
+message GetAllBalancesRequest{
   int32 skip = 1;
   int32 take = 2;
+} 
+
+message GetAllBalancesForBlockchainRequest{
+  string blockchainId = 1;
+  int32 skip = 2;
+  int32 take = 3;
 } 
 
 message BalanceResponse{

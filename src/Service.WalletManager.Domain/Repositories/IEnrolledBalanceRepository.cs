@@ -18,5 +18,7 @@ namespace Service.WalletManager.Domain.Repositories
         Task<EnrolledBalance> TryGetAsync(DepositWalletKey key);
 
         Task<IEnumerable<EnrolledBalance>> GetAllAsync(int skip, int count);
+
+        Task<IEnumerable<EnrolledBalance>> GetAllForBlockchainAsync(string blockchainId, int skip, int count);
     }
 }

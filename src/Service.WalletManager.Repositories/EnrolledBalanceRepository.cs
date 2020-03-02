@@ -147,6 +147,22 @@ namespace Service.WalletManager.Repositories
             }
         }
 
+        public async Task<IEnumerable<EnrolledBalance>> GetAllForBlockchainAsync(string blockchainId, int skip, int count)
+        {
+            using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
+            {
+                var result = context
+                    .EnrolledBalances
+                    .Where(x => x.BlockchianId == blockchainId)
+                    .Skip(skip)
+                    .Take(count);
+
+                await result.LoadAsync();
+
+                return result.Select(MapFromEntity).ToList();
+            }
+        }
+
         private static EnrolledBalance MapFromEntity(EnrolledBalanceEntity entity)
         {
             if (entity == null)

@@ -128,6 +128,11 @@ namespace Service.WalletManager.Repositories
             return this._enrolledBalanceRepository.GetAllAsync(skip, count);
         }
 
+        public Task<IEnumerable<EnrolledBalance>> GetAllForBlockchainAsync(string blockchainId, int skip, int count)
+        {
+            return this._enrolledBalanceRepository.GetAllForBlockchainAsync(blockchainId, skip, count);
+        }
+
         public void Start()
         {
             int skip = 0;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +24,6 @@ namespace Service.WalletManager
                     logger.LogInformation("Application is being started");
 
                     var host = CreateHostBuilder(loggerFactory).Build();
-                    var options = host.Services.GetService<DbContextOptions<WalletManagerContext>>();
-
-                    using (var context = new WalletManagerContext(options))
-                    {
-                        await context.Database.MigrateAsync();
-                    }
 
                     host.Run();
 

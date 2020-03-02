@@ -20,7 +20,29 @@ namespace Service.WalletManager.Services
             _enrolledBalanceRepository = enrolledBalanceRepository;
         }
 
-        public override async Task<BalanceResponses> GetAllBalances(GetAllBalanceRequest request, ServerCallContext context)
+        public override async Task<BalanceResponses> GetAllBalancesForBlockchain(GetAllBalancesForBlockchainRequest request, ServerCallContext context)
+        {
+            var balances = 
+                await _enrolledBalanceRepository.GetAllForBlockchainAsync(request.BlockchainId, request.Skip, request.Skip);
+            var response = new BalanceResponses();
+
+            if (balances != null && balances.Any())
+                response.Balances.AddRange(balances.Select(x => new BalanceResponse()
+                {
+                    Block = x.Block,
+                    Balance = x.Balance.ToString(),
+                    WalletKey = new WalletKey()
+                    {
+                        BlockchainAssetId = x.Key.BlockchainAssetId,
+                        BlockchainId = x.Key.BlockchainId,
+                        WalletAddress = x.Key.WalletAddress
+                    }
+                }));
+
+            return response;
+        }
+
+        public override async Task<BalanceResponses> GetAllBalances(GetAllBalancesRequest request, ServerCallContext context)
         {
             var balances = await _enrolledBalanceRepository.GetAllAsync(request.Skip, request.Skip);
             var response = new BalanceResponses();

@@ -102,7 +102,6 @@ namespace Service.WalletManager
                 .As<WalletManagerConfig>()
                 .SingleInstance();
 
-
             foreach (var blockchain in walletManagerConfig.BlockchainSettings.Blockchains)
             {
                 builder.RegisterType<BlockchainApiClient>()
@@ -150,6 +149,13 @@ namespace Service.WalletManager
                 });
 
             services.AddMemoryCache();
+            //Should be here
+            var options = services.BuildServiceProvider().GetRequiredService<DbContextOptions<WalletManagerContext>>();
+
+            using (var context = new WalletManagerContext(options))
+            {
+                context.Database.Migrate();
+            }
         }
     }
 }

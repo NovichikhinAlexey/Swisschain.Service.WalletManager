@@ -39,6 +39,8 @@ namespace Service.WalletManager.TestClient
                 }
             });
 
+            //await client.Operations.GetOperationsForWallet();
+
             var task = client.Wallets.RegisterWalletAsync(new RegisterWalletRequest()
             {
                 WalletKey = walletKey
