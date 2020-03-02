@@ -52,7 +52,7 @@ namespace Service.WalletManager.Services
             return new BalanceResponse()
             {
                  Block = balance?.Block ?? 0,
-                 Balance = balance?.Balance.ToString(),
+                 Balance = balance?.Balance.ToString() ?? "0",
                  WalletKey = request.WalletKey
             };
         }

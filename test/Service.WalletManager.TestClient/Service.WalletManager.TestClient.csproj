@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.WalletManager.Client\Service.WalletManager.Client.csproj" />
+    <ProjectReference Include="..\..\src\Service.WalletManager.Protos\Service.WalletManager.Protos.csproj" />
   </ItemGroup>
 
 </Project>

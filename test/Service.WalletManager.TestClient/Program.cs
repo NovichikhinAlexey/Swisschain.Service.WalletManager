@@ -29,6 +29,16 @@ namespace Service.WalletManager.TestClient
                 WalletAddress = senderWallet.PublicAddress
             };
 
+            var balance1 = await client.Balances.GetBalanceAsync(new GetBalanceRequest()
+            {
+                WalletKey = new WalletKey()
+                {
+                    BlockchainAssetId = "BTC",
+                    BlockchainId = "Bitcoin",
+                    WalletAddress = "2N8PWy4gScw4WpNgWTqvGYtHkaR56Ds5Wk2"
+                }
+            });
+
             var task = client.Wallets.RegisterWalletAsync(new RegisterWalletRequest()
             {
                 WalletKey = walletKey
