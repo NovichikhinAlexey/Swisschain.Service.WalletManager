@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Service.WalletManager.Domain.Models;
 using Service.WalletManager.Domain.Repositories;
 using Service.WalletManager.Domain.Services;
+using Service.WalletManager.Domain.Util;
 
 namespace Service.WalletManager.DomainServices
 {
@@ -128,11 +129,14 @@ namespace Service.WalletManager.DomainServices
                 return;
             }
 
-            await _enrolledBalanceRepository.SetBalanceAsync(
-                key,
-                balance,
-                depositWallet.Block);
-            await _operationRepository.SetAsync(CreateOperation.Create(key, operationAmount, depositWallet.Block));
+            await RetryPolicy.RetryWithExpBackoff(async () =>
+            {
+                await _enrolledBalanceRepository.SetBalanceAsync(
+                    key,
+                    balance,
+                    depositWallet.Block);
+                await _operationRepository.SetAsync(CreateOperation.Create(key, operationAmount, depositWallet.Block));
+            }, _log);
         }
 
         private static bool CouldBeStarted(
