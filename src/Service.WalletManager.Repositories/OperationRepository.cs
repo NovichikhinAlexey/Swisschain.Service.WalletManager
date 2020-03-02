@@ -65,6 +65,23 @@ namespace Service.WalletManager.Repositories
             }
         }
 
+        public async Task<IEnumerable<Operation>> GetAsync(string blockchainId, string walletAddress, int skip, int take)
+        {
+            using (var context = new WalletManagerContext(_dbContextOptionsBuilder.Options))
+            {
+                var result = context.Operations.Where(x =>
+                        x.BlockchianId == blockchainId &&
+                        x.WalletAddress == walletAddress.ToLower(CultureInfo.InvariantCulture))
+                    .OrderBy(x => x.OperationId)
+                    .Skip(skip)
+                    .Take(take);
+
+                await result.LoadAsync();
+
+                return result.Select(MapFromOperationEntity).ToList();
+            }
+        }
+
         private static OperationEntity MapToOperationEntity(CreateOperation operation)
         {
             return new OperationEntity()

@@ -21,6 +21,36 @@ namespace Service.WalletManager.Services
             _operationRepository = operationRepository;
         }
 
+        public override async Task<GetOperationResponse> GetOperationsForWallet(GetOperationForWalletRequest request, ServerCallContext context)
+        {
+            var operations = await _operationRepository.GetAsync(
+                request.BlockchainId,
+                request.WalletAddress,
+                request.Skip,
+                request.Take);
+
+            var response = new GetOperationResponse();
+
+            if (operations != null && operations.Any())
+            {
+                response.Operations.AddRange(operations.Select(x =>
+                    new OperationResponse()
+                    {
+                        WalletKey = new WalletKey()
+                        {
+                            BlockchainId = x.Key.BlockchainId,
+                            BlockchainAssetId = x.Key.BlockchainAssetId,
+                            WalletAddress = x.Key.WalletAddress
+                        },
+                        BalanceChange = x.BalanceChange.ToString(),
+                        OperationId = x.OperationId,
+                        Block = x.Block
+                    }));
+            }
+
+            return response;
+        }
+
         public override async Task<GetOperationResponse> GetOperations(GetOperationRequest request, ServerCallContext context)
         {
             var operations = await _operationRepository.GetAsync(new DepositWalletKey(
