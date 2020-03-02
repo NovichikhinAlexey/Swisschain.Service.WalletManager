@@ -23,7 +23,7 @@ namespace Service.WalletManager.Services
         public override async Task<BalanceResponses> GetAllBalancesForBlockchain(GetAllBalancesForBlockchainRequest request, ServerCallContext context)
         {
             var balances = 
-                await _enrolledBalanceRepository.GetAllForBlockchainAsync(request.BlockchainId, request.Skip, request.Skip);
+                await _enrolledBalanceRepository.GetAllForBlockchainAsync(request.BlockchainId, request.Skip, request.Take);
             var response = new BalanceResponses();
 
             if (balances != null && balances.Any())
