@@ -130,7 +130,10 @@ namespace Service.WalletManager
                             operationRepository,
                             blockchainAssetsDict);
 
-                        return new BalanceReadingHostedService(logger, balanceProcessorService);
+                        return new BalanceReadingHostedService(
+                            logger, 
+                            balanceProcessorService, 
+                            walletManagerConfig.DelayBetweenBalanceUpdate);
                     })
                     .SingleInstance()
                     .As<IStartable>()

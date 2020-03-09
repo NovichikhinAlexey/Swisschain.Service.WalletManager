@@ -151,10 +151,11 @@ namespace Service.WalletManager.DomainServices
             var balanceStr = ConverterExtensions.ConvertToString(depositWallet?.Balance ?? 0m, 
                 blockchainAsset.Accuracy, blockchainAsset.Accuracy);
             var balance = BigInteger.Parse(balanceStr);
+            var balanceBlock = depositWallet?.Block ?? enrolledBalance.Block;
 
             var cashinCouldBeStarted = CouldBeStarted(
                 balance,
-                depositWallet?.Block ?? enrolledBalance.Block,
+                balanceBlock,
                 enrolledBalance.Balance,
                 enrolledBalance.Block,
                 blockchainAsset.Accuracy,
@@ -170,7 +171,7 @@ namespace Service.WalletManager.DomainServices
                 await _enrolledBalanceRepository.SetBalanceAsync(
                     key,
                     balance,
-                    enrolledBalance.Block);
+                    balanceBlock);
                 await _operationRepository.SetAsync(CreateOperation.Create(key, operationAmount, enrolledBalance.Block));
             }, _log);
         }

@@ -1,4 +1,6 @@
-﻿namespace Service.WalletManager.Config
+﻿using System;
+
+namespace Service.WalletManager.Config
 {
     public class WalletManagerConfig
     {
@@ -7,6 +9,8 @@
         public string SeqUrl { get; set; }
 
         public BlockchainSettings BlockchainSettings { get; set; }
+
+        public TimeSpan DelayBetweenBalanceUpdate { get; set; }
     }
 
     public class DbConfig

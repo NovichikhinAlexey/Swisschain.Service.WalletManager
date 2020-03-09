@@ -11,15 +11,18 @@ namespace Service.WalletManager.HostedServices
     {
         private readonly ILogger<BalanceReadingHostedService> _logger;
         private readonly IBalanceProcessorService _balanceProcessorService;
+        private readonly TimeSpan _delayBeetweenBalanceUpdate;
         private Task _backgroundWorker;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public BalanceReadingHostedService(
             ILogger<BalanceReadingHostedService> logger,
-            IBalanceProcessorService balanceProcessorService)
+            IBalanceProcessorService balanceProcessorService,
+            TimeSpan delayBeetweenBalanceUpdate)
         {
             _logger = logger;
             _balanceProcessorService = balanceProcessorService;
+            _delayBeetweenBalanceUpdate = delayBeetweenBalanceUpdate;
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -33,7 +36,7 @@ namespace Service.WalletManager.HostedServices
                 {
                     await DoWorkAsync();
 
-                    await Task.Delay(30_000);
+                    await Task.Delay(_delayBeetweenBalanceUpdate);
                 } while (!stoppingToken.IsCancellationRequested);
             }, stoppingToken);
 
