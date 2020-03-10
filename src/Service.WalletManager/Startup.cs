@@ -26,8 +26,6 @@ namespace Service.WalletManager
     {
         public Startup(IConfiguration configuration) : base(configuration)
         {
-            this.Config.Db.ConnectionString =
-                "Server=127.0.0.1;Database=test_db;Port=5432;User Id=test_user;Password=QWERTY_123456;";
         }
 
         protected override void RegisterEndpoints(IEndpointRouteBuilder endpoints)
