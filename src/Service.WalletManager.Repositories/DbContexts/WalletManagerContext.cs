@@ -17,7 +17,7 @@ namespace Service.WalletManager.Repositories.DbContexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("wallet_manager");
+            modelBuilder.HasDefaultSchema(PostgresRepositoryConfiguration.SchemaName);
             
             modelBuilder.Entity<EnrolledBalanceEntity>()
                 .HasKey(c => new { c.BlockchianId, c.BlockchainAssetId, c.WalletAddress });

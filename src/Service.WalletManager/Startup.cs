@@ -26,6 +26,8 @@ namespace Service.WalletManager
     {
         public Startup(IConfiguration configuration) : base(configuration)
         {
+            this.Config.Db.ConnectionString =
+                "Server=127.0.0.1;Database=test_db;Port=5432;User Id=test_user;Password=QWERTY_123456;";
         }
 
         protected override void RegisterEndpoints(IEndpointRouteBuilder endpoints)
@@ -48,17 +50,6 @@ namespace Service.WalletManager
             var walletManagerConfig = this.Config;
 
             #region Repositories
-
-            builder
-                .Register(x =>
-                {
-                    var optionsBuilder = new DbContextOptionsBuilder<WalletManagerContext>();
-                    optionsBuilder.UseNpgsql(walletManagerConfig.Db.ConnectionString);
-
-                    return optionsBuilder;
-                })
-                .As<DbContextOptionsBuilder<WalletManagerContext>>()
-                .SingleInstance();
 
             builder.RegisterType<EnrolledBalanceRepository>()
                 .As<IEnrolledBalanceRepository>()
@@ -143,19 +134,23 @@ namespace Service.WalletManager
 
         protected override void ConfigureServicesExt(IServiceCollection services)
         {
-            var walletManagerConfig = this.Config;
-
-            services.AddDbContext<WalletManagerContext>(
-                options =>
-                {
-                    options.UseNpgsql(walletManagerConfig.Db.ConnectionString);
-                });
-
             services.AddMemoryCache();
             //Should be here
-            var options = services.BuildServiceProvider().GetRequiredService<DbContextOptions<WalletManagerContext>>();
+            services.AddSingleton<DbContextOptionsBuilder<WalletManagerContext>>(x =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<WalletManagerContext>();
+                optionsBuilder.UseNpgsql(this.Config.Db.ConnectionString,
+                    builder =>
+                        builder.MigrationsHistoryTable(
+                            PostgresRepositoryConfiguration.MigrationHistoryTable,
+                            PostgresRepositoryConfiguration.SchemaName));
 
-            using (var context = new WalletManagerContext(options))
+                return optionsBuilder;
+            });
+
+            var contextOptions = services.BuildServiceProvider().GetRequiredService<DbContextOptionsBuilder<WalletManagerContext>>();
+
+            using (var context = new WalletManagerContext(contextOptions.Options))
             {
                 context.Database.Migrate();
             }
